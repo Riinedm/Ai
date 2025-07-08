@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Inara Ai</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #b39a9a;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background-color: #111;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+    }
+
+    #chatbox {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      line-height: 1.5;
+    }
+
+    .user {
+      align-self: flex-end;
+      background-color: #1a1a1a;
+      border: 1px solid #444;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background-color: #222;
+      border: 1px solid #444;
+    }
+
+    footer {
+      padding: 10px 20px;
+      display: flex;
+      background-color: #111;
+      border-top: 1px solid #333;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      margin-right: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      background-color: #04b4f0;
+      color: rgb(93, 208, 236);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0286ba;
+    }
+  </style>
+</head>
+<body>
+  <header>Selamat Datang Kawan Rizki</header>
+
+  <div id="chatbox">
+    <!-- Chat akan tampil di sini -->
+  </div>
+
+  <footer>
+    <input type="text" id="userInput" placeholder="Ketik sesuatu..." />
+    <button onclick="sendMessage()">Kirim</button>
+  </footer>
+
+  <script>
+    const apiKey = "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"; // Ganti dengan API Key OpenRouter kamu
+    const model = "mistralai/mistral-7b-instruct"; // Model default
+
+    let messages = [
+      { role: "system", content: "Kamu adalah asisten AI yang diuat oleh Rizki Inara. Kamu ramah bernama inaraAi yang menjawab dengan sopan dan jelas." }
+    ];
+
+    function appendMessage(role, text) {
+      const msg = document.createElement("div");
+      msg.className = `message ${role}`;
+      msg.innerHTML = `<strong>${role === "user" ? "Kamu" : "inaraAi"}:</strong> ${text}`;
+      document.getElementById("chatbox").appendChild(msg);
+      msg.scrollIntoView({ behavior: "smooth" });
+    }
+
+    async function sendMessage() {
+      const inputField = document.getElementById("userInput");
+      const input = inputField.value.trim();
+      if (!input) return;
+
+      appendMessage("user", input);
+      inputField.value = "";
+      messages.push({ role: "user", content: input });
+
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: messages
+        })
+      });
+
+      const data = await res.json();
+      const reply = data.choices[0].message.content;
+      messages.push({ role: "assistant", content: reply });
+      appendMessage("bot", reply);
+    }
+  </script>
+</body>
+</html>
